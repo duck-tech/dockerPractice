@@ -1,2 +1,14 @@
+**/.git
+**/.gitignore
+**/.vscode
+**/coverage
+**/.env
+**/.aws
+**/.ssh
 Dockerfile
-sample.txt
+README.md
+docker-compose.yml
+**/.DS_Store
+**/venv
+**/env
+sample.md
