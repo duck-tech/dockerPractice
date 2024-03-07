@@ -21,6 +21,7 @@ WORKDIR /app
 COPY --from=builder /app /app
 COPY --from=builder /usr/local/lib/python3.6/site-packages /usr/local/lib/python3.6/site-packages
 COPY --from=builder /usr/local/bin/flask /usr/local/bin/flask
+COPY --from=builder /usr/local/bin/gunicorn /usr/local/bin/gunicorn
 
 # 建立一個使用者 duck, 並將 /app 的擁有者改為 duck
 RUN adduser --disabled-password duck \
@@ -40,5 +41,9 @@ ENV FLASK_RUN_PORT=3000
 # Container 要開啟的 Port是3000
 EXPOSE 3000
 
-
-CMD ["flask", "run"]
+# 使用gunicorn而非Flask內建的flask run主要是
+# 因為gunicorn是一個更強大且適合生產環境的WSGI伺服器。
+# 它能處理多個用戶請求，提供更好的性能和穩定性。
+# Flask自帶的伺服器主要用於開發環境，因為它並非設計來處理高並發和生產環境下的安全問題。
+# gunicorn提供了多進程、多線程的工作模式，更適合在生產環境中使用，以確保應用能夠高效、安全地運行。
+CMD ["gunicorn", "-b", "0.0.0.0:3000", "src.main:app"]
