@@ -9,6 +9,7 @@ COPY requirements.txt .
 # 安裝所需的 Python 包,防止pip在安装过程中使用cache，这样做可以减小Docker镜像
 RUN pip install --no-cache-dir -r requirements.txt
 
+
 # 現在，每次我們更改Sample.py時，建置都會重新安裝軟體包。這是非常低效的，尤其是在使用 Docker 容器作為開發環境時。因此，將經常更改的文件保留在 Dockerfile 的末尾至關重要。
 # 這樣改到程式碼時, 不會重新安裝軟體包
 COPY ./src ./src
@@ -23,6 +24,8 @@ COPY --from=builder /usr/local/lib/python3.6/site-packages /usr/local/lib/python
 COPY --from=builder /usr/local/bin/flask /usr/local/bin/flask
 COPY --from=builder /usr/local/bin/gunicorn /usr/local/bin/gunicorn
 
+# 安裝curl, 用於健康檢查
+RUN apk add --no-cache curl
 # 建立一個使用者 duck, 並將 /app 的擁有者改為 duck
 RUN adduser --disabled-password duck \
     && chown -R duck /app
@@ -40,6 +43,8 @@ ENV FLASK_RUN_PORT=3000
 
 # Container 要開啟的 Port是3000
 EXPOSE 3000
+
+HEALTHCHECK CMD curl -f http://0.0.0.0:3000 || exit 1
 
 # 使用gunicorn而非Flask內建的flask run主要是
 # 因為gunicorn是一個更強大且適合生產環境的WSGI伺服器。
